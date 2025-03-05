@@ -1,0 +1,85 @@
+AWS CloudFormation: Auto Scaling & ELB Setup
+
+Overview
+
+This project deploys an AWS infrastructure using CloudFormation to automate the setup of an Elastic Load Balancer (ELB), an Auto Scaling Group (ASG), and two Ubuntu EC2 instances running Apache2.
+
+Features
+
+Elastic Load Balancer (ELB): Distributes traffic across EC2 instances.
+
+Auto Scaling Group (ASG): Automatically manages instances.
+
+Launch Template: Defines the EC2 instance configuration.
+
+Security Groups: Ensures secure access between services.
+
+Target Group: Routes traffic from ELB to healthy instances.
+
+User Data Script: Automatically installs and starts Apache2.
+
+Prerequisites
+
+AWS account with IAM user having administrator privileges.
+
+AWS CLI configured with the correct credentials.
+
+CloudFormation enabled.
+
+A valid EC2 Key Pair.
+
+Deployment Steps
+
+Get Ubuntu AMI ID:
+
+aws ec2 describe-images \
+--owners 099720109477 \
+--filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*" \
+--query "sort_by(Images, &CreationDate)[-1].ImageId" \
+--output text --region <your-region>
+
+Find your VPC ID:
+
+aws ec2 describe-vpcs --query "Vpcs[*].VpcId" --output table --region <your-region>
+
+Find your Subnet IDs:
+
+aws ec2 describe-subnets --query "Subnets[*].{SubnetId:SubnetId,AZ:AvailabilityZone}" --output table --region <your-region>
+
+Modify autoscale-elb-template.yaml with your AMI ID, VPC ID, and Subnet IDs.
+
+Deploy CloudFormation Stack:
+
+aws cloudformation create-stack --stack-name MyELBWebStack \
+--template-body file://autoscale-elb-template.yaml \
+--capabilities CAPABILITY_NAMED_IAM
+
+Check Stack Status:
+
+aws cloudformation describe-stacks --stack-name MyELBWebStack --query "Stacks[0].StackStatus"
+
+Get Load Balancer DNS Name:
+
+Go to EC2 → Load Balancers in AWS Console.
+
+Copy the DNS name of the ELB.
+
+Paste it in a browser to verify the Apache2 welcome page.
+
+Cleanup
+
+To delete the infrastructure and avoid unnecessary charges:
+
+aws cloudformation delete-stack --stack-name MyELBWebStack
+
+Conclusion
+
+This project demonstrates how to use AWS CloudFormation to automate infrastructure deployment, ensuring scalability and high availability.
+
+Next Steps
+
+Extend the template to include HTTPS with an SSL certificate.
+
+Add CloudWatch monitoring for instance health tracking.
+
+Automate deployment with CI/CD pipelines.
