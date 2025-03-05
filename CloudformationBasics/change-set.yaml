@@ -1,0 +1,11 @@
+Resources:
+  MyInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-0e2c8caa4b6378d8c
+      Tags:
+        - Key: "Name"
+          Value: "change3" 
+            #Intrinsic Function
+
