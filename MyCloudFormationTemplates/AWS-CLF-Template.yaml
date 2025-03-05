@@ -1,0 +1,32 @@
+  WebServerLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: webserver-launch-template
+      LaunchTemplateData:
+        ImageId: !Ref AMIId
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyPairName
+        SecurityGroupIds:
+          - !Ref WebServerSecurityGroup
+        UserData:
+          Fn::Base64: |
+            #!/bin/bash
+            apt update -y
+            apt install apache2 -y
+            systemctl start apache2
+            systemctl enable apache2
+
+  WebServerAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize: '2'
+      MaxSize: '2'
+      DesiredCapacity: '2'
+      VPCZoneIdentifier:
+        - subnet-0ea758d13a4d6a05d
+        - subnet-09b035c1a848ec561
+      LaunchTemplate:
+        LaunchTemplateId: !Ref WebServerLaunchTemplate
+        Version: !GetAtt WebServerLaunchTemplate.LatestVersionNumber
+      TargetGroupARNs:
+        - !Ref ALBTargetGroup
